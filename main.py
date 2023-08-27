@@ -19,7 +19,7 @@ PLATFORMS = {
     "yt": {"metrics": ["Подписчики", "Просмотры"], "function": predict_yt},
 }
 
-ALLOW_EXTENSIONS = [".jpg", ".png", ".PNG", ".jpeg"]
+ALLOW_EXTENSIONS = [".jpg", ".png", ".PNG", ".jpeg", ".JPG"]
 
 
 @dataclass
@@ -65,7 +65,7 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
     ):
         return Result(
             id=blog_id,
-            original_file=filename,
+            original_file=image.name.lower(),
             processed_file=None,
             metrics=[],
             platform=platform,
@@ -98,8 +98,8 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
 
     return Result(
         id=blog_id,
-        original_file=image.name,
-        processed_file=image.name,
+        original_file=image.name.lower(),
+        processed_file=image.name.lower(),
         metrics=metrics,
         platform=platform,
     )
@@ -157,12 +157,22 @@ def main() -> None:
         result = process_image(platform, image, image_to_blog[image])
         results[platform].append(result)
 
+    processed_images = {}
+
     for platform, results in results.items():
         generate_excel(platform, results)
         json.dump(
             [asdict(item) for item in results],
-            pathlib.Path(f"{platform}/{platform}.json").open("w"),
+            pathlib.Path(f"{platform}.json").open("w"),
         )
+
+        processed_images[platform] = []
+
+        for result in results:
+            if result.processed_file is not None:
+                processed_images[platform].append(result.processed_file)
+
+    json.dump(processed_images, pathlib.Path("processed_images.json").open("w"))
 
 
 main()
