@@ -8,14 +8,15 @@ from PIL import Image, ImageDraw
 from easyocr import easyocr
 from tqdm import tqdm
 
-from model import predict_tg, predict_dzen, predict_vk
+from model import predict_tg, predict_dzen, predict_vk, predict_yt
 
 reader = easyocr.Reader(["ru", "en"])
 
 PLATFORMS = {
     "tg": {"metrics": ["ERR"], "function": predict_tg},
     "zn": {"metrics": ["Количество дочитываний"], "function": predict_dzen},
-    "vk": {"metrics": ["Количество подписчиков"], "function": predict_vk}
+    "vk": {"metrics": ["Количество подписчиков"], "function": predict_vk},
+    "yt": {"metrics": ["Подписчики", "Просмотры"], "function": predict_yt},
 }
 
 ALLOW_EXTENSIONS = [".jpg", ".png", ".PNG", ".jpeg"]
@@ -24,12 +25,13 @@ ALLOW_EXTENSIONS = [".jpg", ".png", ".PNG", ".jpeg"]
 @dataclass
 class Metrica:
     name: str
-    value: str
+    value: Optional[str]
 
 
 @dataclass
 class Result:
     id: str
+    platform: str
     original_file: str
     processed_file: Optional[str]
     metrics: list[Metrica]
@@ -58,14 +60,27 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
 
     result = platform_info["function"](filename, reader)
 
-    if result is None:
+    if result is None or (
+        platform == "yt" and result[0][0] is None and result[0][1] is None
+    ):
         return Result(
-            id=blog_id, original_file=filename, processed_file=None, metrics=[]
+            id=blog_id,
+            original_file=filename,
+            processed_file=None,
+            metrics=[],
+            platform=platform,
         )
 
     pillow = Image.open(filename)
     draw = ImageDraw.Draw(pillow)
-    draw.rectangle(result[1], outline=(255, 0, 0), width=2)
+
+    # Для ютуба result такой
+    # (['640', 23300.0], [[1140, 442, 1228, 490], [1509, 643, 1585, 663]])
+    if platform == "yt":
+        for box in result[1]:
+            draw.rectangle(box, outline=(255, 0, 0), width=2)
+    else:
+        draw.rectangle(result[1], outline=(255, 0, 0), width=2)
 
     processed_path = pathlib.Path(f"{platform}/processed_images")
     processed_path.mkdir(parents=True, exist_ok=True)
@@ -73,29 +88,52 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
 
     pillow.save(processed_image_filename)
 
+    if platform == "yt":
+        metrics = []
+
+        for count, value in enumerate(result[0]):
+            metrics.append(Metrica(name=platform_info["metrics"][count], value=value))
+    else:
+        metrics = [Metrica(name=platform_info["metrics"][0], value=result[0])]
+
     return Result(
         id=blog_id,
-        original_file=filename,
-        processed_file=processed_image_filename,
-        metrics=[Metrica(name=platform_info["metrics"][0], value=result[0])],
+        original_file=image.name,
+        processed_file=image.name,
+        metrics=metrics,
+        platform=platform,
     )
 
 
 def generate_excel(platform: str, results: list[Result]):
     platform_info = PLATFORMS[platform]
-    metrica_name = platform_info["metrics"][0]
     frame_data = []
 
+    columns = []
+
+    for metrica in platform_info["metrics"]:
+        columns.append(metrica)
+
+    columns.append("image")
+
     for result in results:
+        data = []
         if len(result.metrics) > 0:
-            metrica = result.metrics.pop().value
+            for metrica in result.metrics:
+                if metrica is None:
+                    data.append(None)
+                else:
+                    data.append(metrica.value)
         else:
-            metrica = "invalid"
+            for i in range(len(platform_info["metrics"])):
+                data.append("invalid")
 
         image_filename = pathlib.Path(result.original_file).name
-        frame_data.append([metrica, image_filename])
 
-    df = pd.DataFrame(frame_data, columns=[metrica_name, "image"])
+        data.append(image_filename)
+        frame_data.append(data)
+
+    df = pd.DataFrame(frame_data, columns=columns)
     df.to_excel(f"{platform}/{platform}.xlsx", index=False)
 
 
