@@ -1,0 +1,30 @@
+{
+  "1": {
+    "id": 1,
+    "name": "Rogozin",
+    "avatar": "https://cdnn21.img.ria.ru/images/07e7/01/17/1846710254_0:0:2875:1617_1920x0_80_0_0_df4258a7bf55ce11c511d471491445fa.jpg",
+    "platform": "Tg",
+    "description": "Грущу по поводу 'Луна-25'"
+  },
+  "2": {
+    "id": 2,
+    "name": "Medvedev",
+    "avatar": "https://cdn.britannica.com/73/194473-050-57F49709/Dmitry-Medvedev-2016.jpg",
+    "platform": "Vk",
+    "description": "Я экс-президент РФ"
+  },
+  "3": {
+    "id": 3,
+    "name": "Куплинов",
+    "avatar": "https://biogr.net/wp-content/uploads/2021/10/rttrtrrt-3.jpg",
+    "platform": "Yt",
+    "description": "Папапрамампам"
+  },
+  "4": {
+    "id": 4,
+    "name": "История России",
+    "avatar": "https://avatars.dzeninfra.ru/get-zen-logos/1597769/pub_5aaab3e59d5cb3ab0d6fa614_5f8d24bda70d4515e71241c5/orig",
+    "platform": "Zn",
+    "description": "История России – более чем тысячелетняя череда падений и возрождений, поражений и побед, бедствий и национальных триумфов."
+  }
+}
