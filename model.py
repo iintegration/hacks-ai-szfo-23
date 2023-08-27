@@ -345,10 +345,11 @@ def check_thousend(nodes):
                 .replace(" ", "")
                 .replace(",", ".")
                 .replace(":", "")
+                .replace("-", "")
             )
             data.append((n[0], float(val) * 1000, n[2]))
         elif not re.findall("[\D]", n[1]):
-            val = n[1].replace(",", ".").replace(":", "")
+            val = n[1].replace(",", ".").replace(":", "").replace("-", "")
             data.append((n[0], float(val), n[2]))
     return data
 

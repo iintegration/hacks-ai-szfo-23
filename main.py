@@ -1,10 +1,12 @@
 import json
 import pathlib
+import shutil
 from dataclasses import dataclass, asdict
 from typing import Optional
 
 import pandas as pd
 from PIL import Image, ImageDraw
+from docx2txt import docx2txt
 from easyocr import easyocr
 from tqdm import tqdm
 
@@ -19,7 +21,7 @@ PLATFORMS = {
     "yt": {"metrics": ["Подписчики", "Просмотры"], "function": predict_yt},
 }
 
-ALLOW_EXTENSIONS = [".jpg", ".png", ".PNG", ".jpeg", ".JPG"]
+ALLOW_EXTENSIONS = [".jpg", ".png", ".PNG", ".jpeg", ".JPG", ".docx"]
 
 
 @dataclass
@@ -46,12 +48,28 @@ def process_excel() -> dict:
     return result
 
 
-def get_images(dir: str) -> list[pathlib.Path]:
-    return [
-        p
-        for p in pathlib.Path(f"{dir}/images").iterdir()
-        if p.is_file() and p.suffix in ALLOW_EXTENSIONS
-    ]
+def get_images(dir: str) -> list[tuple[pathlib.Path, pathlib.Path]]:
+    result = []
+
+    for p in pathlib.Path(f"{dir}/images").iterdir():
+        if p.is_file() and p.suffix in ALLOW_EXTENSIONS:
+            if p.suffix == ".docx":
+                temp_dir = (pathlib.Path(dir) / "tmp")
+                temp_dir.mkdir(exist_ok=True)
+                docx2txt.process(str(p), temp_dir)
+
+                image_path = next(temp_dir.iterdir())
+
+                if image_path is not None:
+                    save_path = pathlib.Path(f"{dir}/images") / f"{p.name}{image_path.suffix}"
+                    shutil.copyfile(image_path, save_path)
+                    result.append((p, save_path))
+
+                shutil.rmtree(temp_dir)
+            else:
+                result.append((p, None))
+
+    return result
 
 
 def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
@@ -143,18 +161,19 @@ def main() -> None:
     images = []
 
     for platform in PLATFORMS:
-        for image in get_images(platform):
-            images.append((platform, image))
+        for original_file, extracted in get_images(platform):
+            images.append((platform, original_file, extracted))
 
     pbar = tqdm(images)
 
     results = {platform: [] for platform in PLATFORMS}
 
-    for platform, image in pbar:
+    for platform, image, extracted in pbar:
+        image_name = (extracted or image).name
         pbar.set_description(
-            f"Обработка платформы: {platform}, изображение: {image.name}"
+            f"Обработка платформы: {platform}, изображение: {image_name}"
         )
-        result = process_image(platform, image, image_to_blog[image])
+        result = process_image(platform, extracted or image, image_to_blog[image])
         results[platform].append(result)
 
     processed_images = {}
