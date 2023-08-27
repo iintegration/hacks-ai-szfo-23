@@ -161,7 +161,7 @@ def main() -> None:
         generate_excel(platform, results)
         json.dump(
             [asdict(item) for item in results],
-            pathlib.Path(f"{platform}.json").open("w"),
+            pathlib.Path(f"{platform}/{platform}.json").open("w"),
         )
 
 
