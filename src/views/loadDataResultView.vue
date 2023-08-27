@@ -133,7 +133,6 @@ header {
 }
 .content {
   background: #F9F9F9;
-  height: 100vh;
 }
 .content__body {
   padding: 30px 54px 31px 54px;
@@ -143,9 +142,12 @@ header {
 }
 .left-side {
   width: 385px;
-  height: calc(100vh - 75px);
   background: #82D9FF;
   border-radius: 20px;
+}
+.left-side img{
+  border-radius: 20px;
+
 }
 .right-side {
   display: flex;
