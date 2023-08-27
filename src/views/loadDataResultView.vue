@@ -42,28 +42,22 @@
       <div class="right-side">
         <div class="right-side__content">
           <div v-if="workItem.processed_file != null" style="max-width: 500px; max-height: 300px">
-            Метрика: {{ workItem.metrics[0].name }}, Значение: {{ workItem.metrics[0].value }},
+            Метрика: {{ workItem.metrics[0].name }}, Значение: {{ workItem.metrics[0].value }}
+            <div v-if="workItem.metrics[1] !== undefined">
+                Метрика: {{ workItem.metrics[1].name }}, Значение: {{ workItem.metrics[1].value }}
+            </div>
             Платформа по мнению нейросети: {{ workItem.predicted_platform }}
             <div v-if="platform == 'Vk'">
-              <img :src="require('../vk/processed_images/' + workItem.processed_file)" width="500" height="600">
+              <img :src="require('../vk/processed_images/' + workItem.processed_file)">
             </div>
             <div v-if="platform == 'Tg'">
-              <img :src="require('../tg/processed_images/' + workItem.processed_file)" width="500" height="600">
+              <img :src="require('../tg/processed_images/' + workItem.processed_file)">
             </div>
             <div v-if="platform == 'Yt'">
-              <img :src="require('../yt/processed_images/' + workItem.processed_file)" width="500" height="600">
+              <img :src="require('../yt/processed_images/' + workItem.processed_file)">
             </div>
             <div v-if="platform == 'Zn'">
-              <img :src="require('../zn/processed_images/' + workItem.processed_file)" width="500" height="600">
-            </div>
-          </div>
-        </div>
-        <div class="right-side__panel">
-          <div class="panel">
-            <div class="panel__text"> asd</div>
-            <div class="panel__buttons">
-              <button class="panel__buttons--red"> Назад </button>
-              <button class="panel__buttons--green"> Потвердить </button>
+              <img :src="require('../zn/processed_images/' + workItem.processed_file)">
             </div>
           </div>
         </div>
