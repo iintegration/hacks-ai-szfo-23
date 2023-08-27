@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "hack"
+version = "0.1.0"
+description = ""
+authors = ["gabbhack <copyleft@sosus.org>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+tqdm = "=4.66.1"
+pillow = "=9.5.0"
+pandas = "=2.0.3"
+opencv-python = "=4.7.0.72"
+easyocr = "^1.7.0"
+regex = "^2023.8.8"
+openpyxl = "^3.1.2"
+flask = "^2.3.3"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
