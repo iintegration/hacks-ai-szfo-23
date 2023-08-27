@@ -3,12 +3,14 @@ import pathlib
 import shutil
 from dataclasses import dataclass, asdict
 from typing import Optional
+import webbrowser
 
 import pandas as pd
 from PIL import Image, ImageDraw
 from docx2txt import docx2txt
 from easyocr import easyocr
 from tqdm import tqdm
+from distutils.dir_util import copy_tree
 
 from model import predict_tg, predict_dzen, predict_vk, predict_yt
 
@@ -191,7 +193,7 @@ def main() -> None:
         dump = [asdict(item) for item in results]
         json.dump(
             dump,
-            pathlib.Path(f"{platform}.json").open("w"),
+            pathlib.Path(f"src/{platform}.json").open("w"),
         )
 
         processed_images[platform] = []
@@ -200,7 +202,13 @@ def main() -> None:
             if result.processed_file is not None:
                 processed_images[platform].append(result.processed_file)
 
-    json.dump(processed_images, pathlib.Path("processed_images.json").open("w"))
+    json.dump(processed_images, pathlib.Path("src/processed_images.json").open("w"))
 
+    copy_tree("tg", "src/tg")
+    copy_tree("vk", "src/vk")
+    copy_tree("yt", "src/yt")
+    copy_tree("zn", "src/zn")
+
+    webbrowser.open_new_tab("http://localhost:8080")
 
 main()
