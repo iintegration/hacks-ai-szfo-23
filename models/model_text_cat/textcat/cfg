@@ -1,0 +1,10 @@
+{
+  "labels":[
+    "tg",
+    "vk",
+    "yt",
+    "zn"
+  ],
+  "threshold":0.0,
+  "positive_label":null
+}

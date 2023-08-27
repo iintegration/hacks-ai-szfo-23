@@ -36,6 +36,7 @@ class Metrica:
 class Result:
     id: str
     platform: str
+    predicted_platform: Optional[str]
     original_file: str
     processed_file: Optional[str]
     metrics: list[Metrica]
@@ -89,6 +90,7 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
             processed_file=None,
             metrics=[],
             platform=platform,
+            predicted_platform=None
         )
 
     pillow = Image.open(filename)
@@ -122,6 +124,7 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
         processed_file=image.name.lower(),
         metrics=metrics,
         platform=platform,
+        predicted_platform=result[-1]
     )
 
 
@@ -171,6 +174,9 @@ def main() -> None:
     results = {platform: [] for platform in PLATFORMS}
 
     for platform, image, extracted in pbar:
+        if image not in image_to_blog:
+            continue
+
         image_name = (extracted or image).name
         pbar.set_description(
             f"Обработка платформы: {platform}, изображение: {image_name}"
@@ -182,8 +188,9 @@ def main() -> None:
 
     for platform, results in results.items():
         generate_excel(platform, results)
+        dump = [asdict(item) for item in results]
         json.dump(
-            [asdict(item) for item in results],
+            dump,
             pathlib.Path(f"{platform}.json").open("w"),
         )
 

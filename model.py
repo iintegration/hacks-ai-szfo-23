@@ -4,6 +4,14 @@ import cv2
 import numpy as np
 from regex import regex
 
+from text_classifer import TextClassifer
+
+
+def predict_class(result):
+    result = " ".join([r[1] for r in result])
+    model = TextClassifer(label_list=['tg', 'vk', 'yt', 'zn'])
+    return model.predict([result])[0]
+
 
 def get_closest_value(node, nodes, coef):
     # оставляем только те ноды, в которых есть цифры
@@ -62,6 +70,7 @@ def predict_tg(filename, reader):
     result = reader.readtext(
         image, paragraph=False, batch_size=8
     )  # '1 август 2022.jpg'
+    predicted_platform = predict_class(result)
     key = [
         "err",  # Приоритетнее
         "постов (cp)",  #!!!2
@@ -122,7 +131,7 @@ def predict_tg(filename, reader):
             closest_bboxes.append(bbox)
         digit = closest_values[closest_distances.index(min(closest_distances))]
         bbox = closest_bboxes[closest_distances.index(min(closest_distances))]
-        return digit, bbox
+        return digit, bbox, predicted_platform
 
 
 def predict_dzen(filename, reader):
@@ -133,6 +142,7 @@ def predict_dzen(filename, reader):
     result = reader.readtext(
         image, paragraph=False, batch_size=8
     )  # '1 август 2022.jpg'
+    predicted_platform = predict_class(result)
 
     key = ["дочитывания"]
     # Поиск ключа
@@ -167,7 +177,7 @@ def predict_dzen(filename, reader):
             closest_bboxes.append(bbox)
         digit = closest_values[closest_distances.index(min(closest_distances))]
         bbox = closest_bboxes[closest_distances.index(min(closest_distances))]
-        return digit, bbox
+        return digit, bbox, predicted_platform
 
 
 def predict_vk(filename, reader):
@@ -184,6 +194,7 @@ def predict_vk(filename, reader):
     result = reader.readtext(
         image, paragraph=False, batch_size=8
     )  # '1 август 2022.jpg'
+    predicted_platform = predict_class(result)
 
     key = [
         "подписчиков",  # Приоритетнее
@@ -253,7 +264,7 @@ def predict_vk(filename, reader):
             ],
             key=lambda x: x[0],
         )
-        return all_digit
+        return all_digit[0], all_digit[1], predicted_platform
 
     # Если есть друзья и подписчики
     elif is_friend and is_subs and not is_recomended:
@@ -268,7 +279,7 @@ def predict_vk(filename, reader):
                 max([values[0][1][2]] + [values[1][1][2]]),
                 max([values[0][1][3]] + [values[1][1][3]]),
             ]
-            return digit, bbox
+            return digit, bbox, predicted_platform
 
         except Exception as e:
             values = []
@@ -310,7 +321,7 @@ def predict_vk(filename, reader):
                 max([values[0][1][2]] + [values[1][1][2]]),
                 max([values[0][1][3]] + [values[1][1][3]]),
             ]
-            return digit, bbox
+            return digit, bbox, predicted_platform
 
     else:
         # Не нашли число в ключевом слове
@@ -330,7 +341,7 @@ def predict_vk(filename, reader):
             closest_bboxes.append(bbox)
         digit = closest_values[closest_distances.index(min(closest_distances))]
         bbox = closest_bboxes[closest_distances.index(min(closest_distances))]
-        return digit, bbox
+        return digit, bbox, predicted_platform
 
 
 def check_thousend(nodes):
@@ -361,6 +372,7 @@ def predict_yt(filename, reader):
     result = reader.readtext(
         image, paragraph=False, batch_size=8
     )  # '1 август 2022.jpg'
+    predicted_platform = predict_class(result)
 
     all_digit = []
     all_bbox = []
@@ -503,4 +515,4 @@ def predict_yt(filename, reader):
                     all_digit.append(None)
                     all_bbox.append(None)
 
-    return all_digit, all_bbox
+    return all_digit, all_bbox, predicted_platform
