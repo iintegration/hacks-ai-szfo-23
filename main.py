@@ -21,6 +21,8 @@ PLATFORMS = {
     "yt": {"metrics": ["Подписчики", "Просмотры"], "function": predict_yt},
 }
 
+IDS = {"tg": 1, "vk": 2, "yt": 3, "zn": 4,}
+
 ALLOW_EXTENSIONS = [".jpg", ".png", ".PNG", ".jpeg", ".JPG", ".docx"]
 
 
@@ -82,7 +84,7 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
         platform == "yt" and result[0][0] is None and result[0][1] is None
     ):
         return Result(
-            id=blog_id,
+            id=IDS[platform],
             original_file=image.name.lower(),
             processed_file=None,
             metrics=[],
@@ -115,7 +117,7 @@ def process_image(platform: str, image: pathlib.Path, blog_id: str) -> Result:
         metrics = [Metrica(name=platform_info["metrics"][0], value=result[0])]
 
     return Result(
-        id=blog_id,
+        id=IDS[platform],
         original_file=image.name.lower(),
         processed_file=image.name.lower(),
         metrics=metrics,
